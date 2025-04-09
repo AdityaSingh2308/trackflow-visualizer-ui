@@ -19,6 +19,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/tracking/:trackingId" element={<TrackingPage />} />
+          <Route path="/help" element={<NotFound />} /> {/* Placeholder for Help page */}
+          <Route path="/contact" element={<NotFound />} /> {/* Placeholder for Contact page */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
