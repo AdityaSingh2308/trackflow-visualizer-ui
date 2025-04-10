@@ -2,10 +2,12 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { PackageStatusType } from '@/types/tracking';
+import { ClockIcon } from 'lucide-react';
 
 interface TrackingHeaderProps {
   trackingNumber: string;
   status: PackageStatusType;
+  eta?: string;
 }
 
 const StatusBadge = ({ status }: { status: PackageStatusType }) => {
@@ -41,7 +43,7 @@ const StatusBadge = ({ status }: { status: PackageStatusType }) => {
   );
 };
 
-const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status }) => {
+const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status, eta }) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center animate-fade-in">
       <div>
@@ -50,7 +52,15 @@ const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status 
           <span className="font-medium">Tracking Number:</span> #{trackingNumber}
         </p>
       </div>
-      <StatusBadge status={status} />
+      <div className="flex flex-col items-end mt-2 md:mt-0">
+        <StatusBadge status={status} />
+        {eta && (
+          <div className="flex items-center mt-2 text-tracking-orange">
+            <ClockIcon className="w-4 h-4 mr-1" />
+            <span className="text-sm font-medium">ETA: {eta}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

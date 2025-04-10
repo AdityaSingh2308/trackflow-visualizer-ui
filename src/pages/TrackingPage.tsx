@@ -92,6 +92,7 @@ const TrackingPage: React.FC = () => {
           <TrackingHeader 
             trackingNumber={trackingInfo.trackingNumber}
             status={trackingInfo.status}
+            eta={trackingInfo.eta}
           />
         </Card>
         
@@ -118,7 +119,6 @@ const TrackingPage: React.FC = () => {
                 <LocationDetails 
                   pickup={trackingInfo.pickup}
                   delivery={trackingInfo.delivery}
-                  eta={trackingInfo.eta}
                 />
               </Card>
               
