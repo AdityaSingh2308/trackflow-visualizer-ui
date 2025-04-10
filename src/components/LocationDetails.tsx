@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { MapPinIcon, ClockIcon } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { LocationDetail } from '@/types/tracking';
 
@@ -15,10 +14,9 @@ const LocationCard: React.FC<{
   title: string;
   location: LocationDetail;
   isDelivery?: boolean;
-  eta?: string;
-}> = ({ title, location, isDelivery, eta }) => {
+}> = ({ title, location, isDelivery }) => {
   return (
-    <Card className="flex-1 p-4 border border-border">
+    <div className="mb-4">
       <h3 className="text-sm font-semibold text-muted-foreground mb-2">{title}</h3>
       
       <div className="flex items-start mb-3">
@@ -32,10 +30,31 @@ const LocationCard: React.FC<{
       {location.notes && (
         <p className="text-sm text-muted-foreground ml-7">{location.notes}</p>
       )}
+    </div>
+  );
+};
+
+const LocationDetails: React.FC<LocationDetailsProps> = ({ pickup, delivery, eta }) => {
+  return (
+    <div className="animate-fade-in">
+      <h3 className="text-lg font-semibold mb-4">Location Details</h3>
       
-      {isDelivery && eta && (
+      <LocationCard 
+        title="PICKUP LOCATION"
+        location={pickup}
+      />
+      
+      <Separator className="my-4" />
+      
+      <LocationCard 
+        title="DELIVERY LOCATION"
+        location={delivery}
+        isDelivery
+      />
+      
+      {eta && (
         <>
-          <Separator className="my-3" />
+          <Separator className="my-4" />
           <div className="flex items-center">
             <ClockIcon className="w-5 h-5 mr-2 text-tracking-orange" />
             <div>
@@ -45,23 +64,6 @@ const LocationCard: React.FC<{
           </div>
         </>
       )}
-    </Card>
-  );
-};
-
-const LocationDetails: React.FC<LocationDetailsProps> = ({ pickup, delivery, eta }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 animate-fade-in">
-      <LocationCard 
-        title="PICKUP LOCATION"
-        location={pickup}
-      />
-      <LocationCard 
-        title="DELIVERY LOCATION"
-        location={delivery}
-        isDelivery
-        eta={eta}
-      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { TrackingData } from '@/types/tracking';
 import { getTrackingInfo } from '@/services/trackingService';
@@ -15,6 +16,7 @@ import { AlertCircle, Copyright } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const TrackingPage: React.FC = () => {
+  const { trackingId } = useParams<{ trackingId: string }>();
   const [trackingInfo, setTrackingInfo] = useState<TrackingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,9 +26,9 @@ const TrackingPage: React.FC = () => {
     const fetchTrackingData = async () => {
       try {
         setIsLoading(true);
-        // In a real app, you might get the tracking ID from URL params
-        const trackingId = "TRK293847562"; // Example tracking number
-        const data = await getTrackingInfo(trackingId);
+        // Use the trackingId from URL params or fallback to example
+        const id = trackingId || "TRK293847562";
+        const data = await getTrackingInfo(id);
         setTrackingInfo(data);
         setError(null);
       } catch (err) {
@@ -43,7 +45,7 @@ const TrackingPage: React.FC = () => {
     };
 
     fetchTrackingData();
-  }, [toast]);
+  }, [trackingId, toast]);
 
   if (isLoading) {
     return (
@@ -97,16 +99,9 @@ const TrackingPage: React.FC = () => {
           <TrackingTimeline status={trackingInfo.status} />
         </Card>
         
-        <Card className="p-6 shadow-md mb-6 hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10">
-          <LocationDetails 
-            pickup={trackingInfo.pickup}
-            delivery={trackingInfo.delivery}
-            eta={trackingInfo.eta}
-          />
-        </Card>
-        
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-          <div className="lg:col-span-8">
+          {/* Map on the left */}
+          <div className="lg:col-span-7">
             <Card className="h-full shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10 p-1">
               <TrackingMap 
                 pickup={trackingInfo.pickup}
@@ -115,10 +110,22 @@ const TrackingPage: React.FC = () => {
               />
             </Card>
           </div>
-          <div className="lg:col-span-4">
-            <Card className="h-full shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10 p-6">
-              <PackageInfo packageDetails={trackingInfo.packageDetails} />
-            </Card>
+          
+          {/* All other details on the right */}
+          <div className="lg:col-span-5">
+            <div className="space-y-6">
+              <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10 p-6">
+                <LocationDetails 
+                  pickup={trackingInfo.pickup}
+                  delivery={trackingInfo.delivery}
+                  eta={trackingInfo.eta}
+                />
+              </Card>
+              
+              <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10 p-6">
+                <PackageInfo packageDetails={trackingInfo.packageDetails} />
+              </Card>
+            </div>
           </div>
         </div>
       </div>
