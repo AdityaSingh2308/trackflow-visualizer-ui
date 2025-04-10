@@ -3,12 +3,15 @@ import React from 'react';
 import { CheckIcon, ClockIcon, MapPinIcon, TruckIcon } from 'lucide-react';
 import { PackageStatusType } from '@/types/tracking';
 import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TrackingTimelineProps {
   status: PackageStatusType;
 }
 
 const TrackingTimeline: React.FC<TrackingTimelineProps> = ({ status }) => {
+  const isMobile = useIsMobile();
+  
   const steps = [
     { key: 'pending', label: 'Order Placed', icon: CheckIcon },
     { key: 'in-transit', label: 'In Transit', icon: TruckIcon },
@@ -26,9 +29,11 @@ const TrackingTimeline: React.FC<TrackingTimelineProps> = ({ status }) => {
   };
 
   const currentProgress = statusMap[status];
+  const iconSize = isMobile ? 'w-4 h-4' : 'w-5 h-5';
+  const circleSize = isMobile ? 'w-8 h-8' : 'w-10 h-10';
 
   return (
-    <div className="mt-8 mb-10">
+    <div className="mt-4 sm:mt-8 mb-6 sm:mb-10">
       <div className="flex items-center justify-between">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
@@ -51,7 +56,7 @@ const TrackingTimeline: React.FC<TrackingTimelineProps> = ({ status }) => {
               >
                 <motion.div
                   className={`
-                    w-10 h-10 rounded-full flex items-center justify-center border-2 
+                    ${circleSize} rounded-full flex items-center justify-center border-2
                     ${isActive ? 
                       isFailed ? 'border-tracking-red bg-red-50 text-tracking-red' : 'border-tracking-blue bg-blue-50 text-tracking-blue' 
                       : 'border-gray-300 bg-white text-gray-400'
@@ -71,7 +76,7 @@ const TrackingTimeline: React.FC<TrackingTimelineProps> = ({ status }) => {
                 >
                   {isFailed ? (
                     <motion.div 
-                      className="w-4 h-4 bg-tracking-red rounded-full"
+                      className={`w-3 h-3 sm:w-4 sm:h-4 bg-tracking-red rounded-full`}
                       animate={{ scale: [1, 1.15, 1] }}
                       transition={{ 
                         duration: 2, 
@@ -93,20 +98,20 @@ const TrackingTimeline: React.FC<TrackingTimelineProps> = ({ status }) => {
                         repeatType: "reverse"
                       }}
                     >
-                      <step.icon className="w-5 h-5" />
+                      <step.icon className={iconSize} />
                     </motion.div>
                   )}
                 </motion.div>
                 
                 {/* Step Label */}
                 <motion.div 
-                  className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-max"
+                  className="absolute -bottom-5 sm:-bottom-6 left-1/2 transform -translate-x-1/2 w-max"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: index * 0.2 + 0.2 }}
                 >
                   <span 
-                    className={`text-xs font-medium ${
+                    className={`text-[10px] sm:text-xs font-medium ${
                       isActive ? 
                         isFailed ? 'text-tracking-red' : 'text-tracking-blue' 
                         : 'text-gray-500'
@@ -120,7 +125,7 @@ const TrackingTimeline: React.FC<TrackingTimelineProps> = ({ status }) => {
               {/* Connector Line (except after last step) */}
               {index < steps.length - 1 && (
                 <motion.div 
-                  className={`h-1 flex-1 mx-2 bg-gray-300 overflow-hidden`}
+                  className={`h-0.5 sm:h-1 flex-1 mx-1 sm:mx-2 bg-gray-300 overflow-hidden`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.3 }}

@@ -3,6 +3,7 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { PackageStatusType } from '@/types/tracking';
 import { ClockIcon } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TrackingHeaderProps {
   trackingNumber: string;
@@ -37,27 +38,29 @@ const StatusBadge = ({ status }: { status: PackageStatusType }) => {
   const config = statusConfig[status];
 
   return (
-    <Badge variant="outline" className={`${config.color} px-3 py-1 text-xs font-medium`}>
+    <Badge variant="outline" className={`${config.color} px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-medium`}>
       {config.label}
     </Badge>
   );
 };
 
 const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status, eta }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold mb-1">Package Tracking</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold mb-0.5 sm:mb-1">Package Tracking</h1>
+        <p className="text-sm text-muted-foreground">
           <span className="font-medium">Tracking Number:</span> #{trackingNumber}
         </p>
       </div>
-      <div className="flex flex-col items-end mt-2 md:mt-0">
+      <div className="flex flex-col items-start md:items-end mt-2 md:mt-0">
         <StatusBadge status={status} />
         {eta && (
-          <div className="flex items-center mt-2 text-tracking-orange">
-            <ClockIcon className="w-4 h-4 mr-1" />
-            <span className="text-sm font-medium">ETA: {eta}</span>
+          <div className="flex items-center mt-1.5 sm:mt-2 text-tracking-orange">
+            <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+            <span className="text-xs sm:text-sm font-medium">ETA: {eta}</span>
           </div>
         )}
       </div>
