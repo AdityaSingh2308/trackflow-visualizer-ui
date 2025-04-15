@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PackageStatusType } from '@/types/tracking';
-import { ClockIcon } from 'lucide-react';
+import { ClockIcon, Share2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from "@/hooks/use-toast";
 
 interface TrackingHeaderProps {
   trackingNumber: string;
@@ -46,6 +48,40 @@ const StatusBadge = ({ status }: { status: PackageStatusType }) => {
 
 const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status, eta }) => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  
+  const handleShare = async () => {
+    const url = window.location.href;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Tracking Package #${trackingNumber}`,
+          text: `Track package #${trackingNumber}`,
+          url: url,
+        });
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          copyToClipboard(url);
+        }
+      }
+    } else {
+      copyToClipboard(url);
+    }
+  };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        description: "Tracking link copied to clipboard",
+      });
+    }).catch(() => {
+      toast({
+        variant: "destructive",
+        description: "Failed to copy tracking link",
+      });
+    });
+  };
   
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center animate-fade-in">
@@ -55,14 +91,23 @@ const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status,
           <span className="font-medium">Tracking Number:</span> #{trackingNumber}
         </p>
       </div>
-      <div className="flex flex-col items-start md:items-end mt-2 md:mt-0">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-2 mt-2 md:mt-0">
         <StatusBadge status={status} />
         {eta && (
-          <div className="flex items-center mt-1.5 sm:mt-2 text-tracking-orange">
+          <div className="flex items-center text-tracking-orange">
             <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             <span className="text-xs sm:text-sm font-medium">ETA: {eta}</span>
           </div>
         )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1.5"
+          onClick={handleShare}
+        >
+          <Share2 className="h-4 w-4" />
+          <span className="hidden sm:inline">Share</span>
+        </Button>
       </div>
     </div>
   );
