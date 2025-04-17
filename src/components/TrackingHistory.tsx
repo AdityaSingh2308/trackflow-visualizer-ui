@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { TrackingEvent } from '@/services/trackingService';
 import { PackageStatusType } from '@/types/tracking';
-import { CheckIcon, TruckIcon, MapPinIcon, XIcon, RefreshCwIcon, PackageIcon } from 'lucide-react';
+import { CheckIcon, TruckIcon, MapPinIcon, XCircleIcon, RefreshCwIcon, PackageIcon } from 'lucide-react';
 
 interface TrackingHistoryProps {
   events: TrackingEvent[];
@@ -20,7 +20,7 @@ const getStatusIcon = (status: string) => {
     case 'delivered':
       return <CheckIcon className="h-4 w-4" />;
     case 'failed':
-      return <XIcon className="h-4 w-4" />;
+      return <XCircleIcon className="h-4 w-4" />;
     default:
       return <PackageIcon className="h-4 w-4" />;
   }
@@ -40,6 +40,23 @@ const getStatusColor = (status: string): string => {
       return 'bg-red-500 border-red-600';
     default:
       return 'bg-gray-500 border-gray-600';
+  }
+};
+
+const getStatusLabel = (status: string): string => {
+  switch (status) {
+    case 'pending':
+      return 'Pending';
+    case 'in-transit':
+      return 'In Transit';
+    case 'out-for-delivery':
+      return 'Out for Delivery';
+    case 'delivered':
+      return 'Delivered';
+    case 'failed':
+      return 'Cancelled';
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1);
   }
 };
 
@@ -69,7 +86,11 @@ const TrackingHistory: React.FC<TrackingHistoryProps> = ({ events }) => {
               {/* Event details */}
               <div className="flex-1 pb-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                  <p className="font-medium">{event.description}</p>
+                  <p className="font-medium">
+                    {event.description.toLowerCase().includes('cancel') 
+                      ? event.description 
+                      : `${getStatusLabel(event.status)}: ${event.description}`}
+                  </p>
                   <p className="text-sm text-muted-foreground">{event.date}</p>
                 </div>
                 {event.location && (
