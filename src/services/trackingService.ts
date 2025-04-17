@@ -1,8 +1,21 @@
 
 import { TrackingData } from "@/types/tracking";
 
+// Event history type
+export interface TrackingEvent {
+  date: string;
+  status: string;
+  description: string;
+  location?: string;
+}
+
+// Extended tracking data with event history
+export interface ExtendedTrackingData extends TrackingData {
+  events: TrackingEvent[];
+}
+
 // Mock service - in a real app, this would fetch data from an API
-export const getTrackingInfo = async (trackingId: string): Promise<TrackingData> => {
+export const getTrackingInfo = async (trackingId: string): Promise<ExtendedTrackingData> => {
   // Simulate API call
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -38,7 +51,39 @@ export const getTrackingInfo = async (trackingId: string): Promise<TrackingData>
             { name: "Wireless Headphones", quantity: 1 },
             { name: "Phone Case", quantity: 2 }
           ]
-        }
+        },
+        events: [
+          {
+            date: "Apr 9, 2025, 8:15 AM",
+            status: "out-for-delivery",
+            description: "Out for delivery",
+            location: "Local Delivery Facility, Pasadena, CA"
+          },
+          {
+            date: "Apr 8, 2025, 10:45 PM",
+            status: "in-transit",
+            description: "Arrived at local facility",
+            location: "Local Delivery Facility, Pasadena, CA"
+          },
+          {
+            date: "Apr 8, 2025, 2:30 PM",
+            status: "in-transit",
+            description: "Departed regional facility",
+            location: "Regional Distribution Center, Commerce, CA"
+          },
+          {
+            date: "Apr 7, 2025, 6:45 PM",
+            status: "pending",
+            description: "Package processed",
+            location: "Shipping Partner Facility, Los Angeles, CA"
+          },
+          {
+            date: "Apr 7, 2025, 11:30 AM",
+            status: "pending",
+            description: "Order placed",
+            location: "Online"
+          }
+        ]
       });
     }, 1000);
   });
@@ -63,5 +108,19 @@ export const attemptDelivery = async (trackingId: string): Promise<boolean> => {
       // In a real app, this would schedule a new delivery attempt
       resolve(true);
     }, 1500);
+  });
+};
+
+// Add an event to the tracking history
+export const addTrackingEvent = async (
+  trackingId: string, 
+  event: TrackingEvent
+): Promise<boolean> => {
+  // This would be an API call in a real app
+  console.log("Adding event to tracking history:", event);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, 800);
   });
 };

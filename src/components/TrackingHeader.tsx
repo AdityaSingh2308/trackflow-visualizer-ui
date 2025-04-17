@@ -7,11 +7,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useState } from 'react';
+import { cancelOrder, attemptDelivery, addTrackingEvent } from '@/services/trackingService';
 
 interface TrackingHeaderProps {
   trackingNumber: string;
   status: PackageStatusType;
   eta?: string;
+  onStatusUpdate?: (newStatus: PackageStatusType) => void;
 }
 
 const StatusBadge = ({ status }: { status: PackageStatusType }) => {
@@ -47,11 +49,12 @@ const StatusBadge = ({ status }: { status: PackageStatusType }) => {
   );
 };
 
-const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status, eta }) => {
+const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status, eta, onStatusUpdate }) => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAttempting, setIsAttempting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   
   const handleShare = async () => {
     const url = window.location.href;
@@ -86,27 +89,99 @@ const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status,
     });
   };
 
-  const handleCancelOrder = () => {
-    setIsDialogOpen(false);
+  const handleCancelOrder = async () => {
+    setIsCancelling(true);
     
-    setTimeout(() => {
+    try {
+      const success = await cancelOrder(trackingNumber);
+      
+      if (success) {
+        await addTrackingEvent(trackingNumber, {
+          date: new Date().toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric', 
+            hour: 'numeric', 
+            minute: 'numeric', 
+            hour12: true 
+          }),
+          status: 'failed',
+          description: 'Order cancelled by customer',
+        });
+        
+        toast({
+          title: "Order Cancelled",
+          description: `Order #${trackingNumber} has been cancelled successfully.`,
+        });
+        
+        if (onStatusUpdate) {
+          onStatusUpdate('failed');
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Cancellation Failed",
+          description: "Unable to cancel the order. Please try again later.",
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
       toast({
-        title: "Order Cancelled",
-        description: `Order #${trackingNumber} has been cancelled successfully.`,
+        variant: "destructive",
+        title: "Cancellation Failed",
+        description: "An error occurred while cancelling your order.",
       });
-    }, 1000);
+    } finally {
+      setIsCancelling(false);
+      setIsDialogOpen(false);
+    }
   };
 
-  const handleAttemptDelivery = () => {
+  const handleAttemptDelivery = async () => {
     setIsAttempting(true);
     
-    setTimeout(() => {
-      setIsAttempting(false);
+    try {
+      const success = await attemptDelivery(trackingNumber);
+      
+      if (success) {
+        await addTrackingEvent(trackingNumber, {
+          date: new Date().toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric', 
+            hour: 'numeric', 
+            minute: 'numeric', 
+            hour12: true 
+          }),
+          status: 'in-transit',
+          description: 'Delivery reattempt requested',
+        });
+        
+        toast({
+          title: "Delivery Attempt Scheduled",
+          description: "We'll attempt to deliver your package again soon.",
+        });
+        
+        if (onStatusUpdate) {
+          onStatusUpdate('in-transit');
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Request Failed",
+          description: "Unable to schedule a new delivery attempt. Please try again later.",
+        });
+      }
+    } catch (error) {
+      console.error("Error scheduling delivery attempt:", error);
       toast({
-        title: "Delivery Attempt Scheduled",
-        description: "We'll attempt to deliver your package again soon.",
+        variant: "destructive",
+        title: "Request Failed",
+        description: "An error occurred while scheduling a new delivery attempt.",
       });
-    }, 2000);
+    } finally {
+      setIsAttempting(false);
+    }
   };
   
   return (
@@ -143,9 +218,12 @@ const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status,
                 size="sm"
                 className="flex items-center gap-1.5 border-destructive text-destructive hover:bg-destructive/10"
                 onClick={() => setIsDialogOpen(true)}
+                disabled={isCancelling}
               >
                 <X className="h-4 w-4" />
-                <span className="hidden sm:inline">Cancel</span>
+                <span className="hidden sm:inline">
+                  {isCancelling ? 'Cancelling...' : 'Cancel'}
+                </span>
               </Button>
             )}
             
@@ -180,8 +258,12 @@ const TrackingHeader: React.FC<TrackingHeaderProps> = ({ trackingNumber, status,
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               No, Keep Order
             </Button>
-            <Button variant="destructive" onClick={handleCancelOrder}>
-              Yes, Cancel Order
+            <Button 
+              variant="destructive" 
+              onClick={handleCancelOrder}
+              disabled={isCancelling}
+            >
+              {isCancelling ? 'Cancelling...' : 'Yes, Cancel Order'}
             </Button>
           </DialogFooter>
         </DialogContent>

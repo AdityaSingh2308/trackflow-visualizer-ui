@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { TrackingData } from '@/types/tracking';
-import { getTrackingInfo } from '@/services/trackingService';
+import { TrackingData, PackageStatusType } from '@/types/tracking';
+import { getTrackingInfo, ExtendedTrackingData, TrackingEvent } from '@/services/trackingService';
 import TrackingHeader from '@/components/TrackingHeader';
 import TrackingTimeline from '@/components/TrackingTimeline';
+import TrackingHistory from '@/components/TrackingHistory';
 import LocationDetails from '@/components/LocationDetails';
 import TrackingMap from '@/components/TrackingMap';
 import PackageInfo from '@/components/PackageInfo';
@@ -18,7 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const TrackingPage: React.FC = () => {
   const { trackingId } = useParams<{ trackingId: string }>();
-  const [trackingInfo, setTrackingInfo] = useState<TrackingData | null>(null);
+  const [trackingInfo, setTrackingInfo] = useState<ExtendedTrackingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -48,6 +49,16 @@ const TrackingPage: React.FC = () => {
 
     fetchTrackingData();
   }, [trackingId, toast]);
+
+  // Handle status updates from child components
+  const handleStatusUpdate = (newStatus: PackageStatusType) => {
+    if (trackingInfo) {
+      setTrackingInfo({
+        ...trackingInfo,
+        status: newStatus
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -105,6 +116,11 @@ const TrackingPage: React.FC = () => {
             />
           </Card>
           
+          {/* Tracking History (new) */}
+          <Card className="p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10">
+            <TrackingHistory events={trackingInfo.events} />
+          </Card>
+          
           {/* Location Details */}
           <Card className="p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10">
             <LocationDetails 
@@ -132,12 +148,17 @@ const TrackingPage: React.FC = () => {
           </Card>
           
           {/* Map */}
-          <Card className="h-full shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10 p-1">
+          <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10 p-1">
             <TrackingMap 
               pickup={trackingInfo.pickup}
               delivery={trackingInfo.delivery}
               driver={trackingInfo.driver}
             />
+          </Card>
+          
+          {/* Tracking History (new) */}
+          <Card className="p-6 shadow-md hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-white/10">
+            <TrackingHistory events={trackingInfo.events} />
           </Card>
         </div>
         
@@ -169,6 +190,7 @@ const TrackingPage: React.FC = () => {
             trackingNumber={trackingInfo.trackingNumber}
             status={trackingInfo.status}
             eta={trackingInfo.eta}
+            onStatusUpdate={handleStatusUpdate}
           />
         </Card>
         
