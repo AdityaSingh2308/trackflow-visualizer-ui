@@ -43,3 +43,25 @@ export const getTrackingInfo = async (trackingId: string): Promise<TrackingData>
     }, 1000);
   });
 };
+
+// Mock function to cancel an order
+export const cancelOrder = async (trackingId: string): Promise<boolean> => {
+  // Simulate API call
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // In a real app, this would actually cancel the order in the database
+      resolve(true);
+    }, 1500);
+  });
+};
+
+// Mock function to attempt delivery again
+export const attemptDelivery = async (trackingId: string): Promise<boolean> => {
+  // Simulate API call
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // In a real app, this would schedule a new delivery attempt
+      resolve(true);
+    }, 1500);
+  });
+};
